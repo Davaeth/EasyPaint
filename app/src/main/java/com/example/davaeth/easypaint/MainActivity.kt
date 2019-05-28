@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
         background = Drawing(this)
         mainLayout.addView(background)
 
-        background.setOnTouchListener { view, motionEvent ->
+        background.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     this.background.StartX = motionEvent.x
