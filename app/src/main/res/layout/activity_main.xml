@@ -5,4 +5,48 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity" android:id="@+id/mainLayout"/>
+        tools:context=".MainActivity" android:id="@+id/mainLayout">
+    <Button
+            android:onClick="drawWhite"
+            android:layout_width="80dp"
+            android:layout_height="90dp"
+            android:id="@+id/btn_white"
+            android:background="@color/colorWHITE"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp"/>
+    <Button
+            android:onClick="drawRed"
+            android:layout_width="80dp"
+            android:layout_height="90dp"
+            android:id="@+id/btn_red"
+            android:background="@color/colorRED"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="88dp"/>
+    <Button
+            android:onClick="drawBlack"
+            android:layout_width="80dp"
+            android:layout_height="90dp"
+            android:id="@+id/btn_black"
+            android:background="@color/colorBLACK"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="168dp"
+    />
+    <Button
+            android:onClick="drawBlue"
+            android:layout_width="80dp"
+            android:layout_height="90dp"
+            android:id="@+id/btn_blue"
+            android:background="@color/colorBLUE"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="248dp"
+    />
+    <Button
+            android:onClick="drawGreen"
+            android:layout_width="80dp"
+            android:layout_height="90dp"
+            android:id="@+id/btn_green"
+            android:background="@color/colorGREEN"
+            app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="328dp"
+    />
+</android.support.constraint.ConstraintLayout>

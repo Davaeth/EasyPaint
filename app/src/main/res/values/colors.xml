@@ -3,4 +3,11 @@
     <color name="colorPrimary">#008577</color>
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
+
+    <!-- Standard colors for paint -->
+    <color name="colorBLACK">#000000</color>
+    <color name="colorGREEN">#43A047</color>
+    <color name="colorBLUE">#3949AB</color>
+    <color name="colorRED">#E53935</color>
+    <color name="colorWHITE">#FFFFFF</color>
 </resources>
