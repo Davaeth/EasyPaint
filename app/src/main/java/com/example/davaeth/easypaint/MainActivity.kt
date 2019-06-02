@@ -30,6 +30,10 @@ class MainActivity : AppCompatActivity() {
                     this.background.Paths.add(Path())
                     this.background.Position += 1
 
+                    if (this.background.Paints.count() < this.background.Paths.count())
+                        setPaint(this.background.Paints[this.background.Position - 1].color)
+
+
                     this.background.StartX = motionEvent.x
                     this.background.StartY = motionEvent.y
 
@@ -81,12 +85,15 @@ class MainActivity : AppCompatActivity() {
     //endregion
 
     private fun setPaint(paintColor: Int) {
-        background.Paints.add(Paint().apply {
-            color = paintColor
-            style = Paint.Style.STROKE
-            strokeWidth = 12f
-            isAntiAlias = true
-        })
+        if (this.background.Paints.count() > this.background.Paths.count())
+            background.Paints[background.Paints.lastIndex].color = paintColor
+        else
+            background.Paints.add(Paint().apply {
+                color = paintColor
+                style = Paint.Style.STROKE
+                strokeWidth = 12f
+                isAntiAlias = true
+            })
     }
 
     class Drawing(context: Context) : View(context) {
@@ -190,11 +197,11 @@ class MainActivity : AppCompatActivity() {
 
             try {
                 // Creating particular path with it particular paint set.
-                for(i in 0..this.Paths.count() step 1) {
+                for (i in 0..this.Paths.count() step 1) {
                     canvas.drawPath(paths[i], paints[i])
                 }
             } catch (e: IndexOutOfBoundsException) {
-                println("Error occurred: ${e.message}")
+                println("Error occurred: ${e.message}, because: ${e.cause}.}")
             } finally {
                 canvas.save()
             }
