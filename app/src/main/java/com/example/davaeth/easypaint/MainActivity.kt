@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         initializeDrawingView()
 
+        // Adding permissions to the manifest for higher API.
         permissions.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
         permissions.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
@@ -115,6 +116,7 @@ class MainActivity : AppCompatActivity() {
         text_drawingName.visibility = View.VISIBLE
 
         try {
+            // Show keyboard on edit text focus.
             text_drawingName.requestFocus().apply {
                 val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(text_drawingName, InputMethodManager.SHOW_IMPLICIT)
@@ -131,6 +133,9 @@ class MainActivity : AppCompatActivity() {
 
     //endregion
 
+    /**
+     * Method that sets paint color for the specific paint.
+     */
     private fun setPaint(paintColor: Int) {
         if (background.Paints.count() > this.background.Paths.count())
             background.Paints[background.Paints.lastIndex].color = paintColor
@@ -143,6 +148,9 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
+    /**
+     * Method that actually saves drawing file to a phone.
+     */
     private fun saveDrawingFile() {
         if (!background.createFileToSaveDrawing(text_drawingName)) {
             var ostream: FileOutputStream? = null
@@ -164,7 +172,6 @@ class MainActivity : AppCompatActivity() {
             } finally {
                 ostream?.close()
 
-//                MediaScannerConnection.scanFile(this, String[] {background.fileToSave.absolutePath}, null, null)
                 sendBroadcast(
                     Intent(
                         Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
@@ -172,18 +179,20 @@ class MainActivity : AppCompatActivity() {
                     )
                 )
 
-            text_drawingName.setText("")
+                text_drawingName.setText("")
+            }
+        } else {
+            Toast.makeText(this, "File exists!", Toast.LENGTH_LONG).show()
         }
-    } else
-    {
-        Toast.makeText(this, "File exists!", Toast.LENGTH_LONG).show()
     }
-}
 
-private fun initializeDrawingView() {
-    background = Drawing(this)
-    mainLayout.addView(background)
+    /**
+     * Method that initializes drawing view.
+     */
+    private fun initializeDrawingView() {
+        background = Drawing(this)
+        mainLayout.addView(background)
 
-    setPaint(Color.BLACK) // Starting paint color
-}
+        setPaint(Color.BLACK) // Starting paint color
+    }
 }

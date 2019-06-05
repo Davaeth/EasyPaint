@@ -115,6 +115,10 @@ class Drawing(context: Context) : View(context) {
     //endregion
 
     //region Save drawing methods
+
+    /**
+     * Method that creates file in which drawing will be saved.
+     */
     fun createFileToSaveDrawing(drawingNameText: EditText): Boolean {
         return if (checkDrawingToSaveName(drawingNameText)) {
             fileToSave = File("$fileToSavePath/${drawingNameText.text.trim()}.png")
@@ -131,6 +135,9 @@ class Drawing(context: Context) : View(context) {
         }
     }
 
+    /**
+     * Method that creates actual bitmap that will be saved.
+     */
     fun createDrawingToSave() {
         val window: Rect = Rect()
         this.getWindowVisibleDisplayFrame(window)
@@ -149,6 +156,9 @@ class Drawing(context: Context) : View(context) {
         }
     }
 
+    /**
+     * Method that checks if file name is correct.
+     */
     private fun checkDrawingToSaveName(drawingNameText: EditText): Boolean {
         if (backgroundColorToSave == Color.WHITE) {
             drawingNameText.setTextColor(Color.BLACK)
