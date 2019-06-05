@@ -1,41 +1,53 @@
 package com.example.davaeth.easypaint
 
 import android.content.Context
-import android.content.pm.PackageManager
-import android.graphics.*
-import android.graphics.drawable.Drawable
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Environment
 import android.support.annotation.RequiresApi
+import android.support.v7.app.AppCompatActivity
 import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
-import java.io.File
 import java.io.FileOutputStream
-import java.lang.Exception
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var background: Drawing
     private var permissions: MutableList<String> = mutableListOf<String>() // List of required permissions.
+
+    private var drawing: Bitmap? = null
+
+    private var hasFocus: Boolean = false
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        background = Drawing(this)
-        mainLayout.addView(background)
+        initializeDrawingView()
 
         permissions.add(android.Manifest.permission.READ_EXTERNAL_STORAGE)
         permissions.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
-        setPaint(Color.BLACK) // Starting paint color
-
         this.requestPermissions(permissions.toTypedArray(), 47) // Ask user for required permissions.
+
+        try {
+            text_drawingName.setOnEditorActionListener { _, actionId, event ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    saveDrawingFile()
+                }
+                false
+            }
+        } catch (e: Exception) {
+            println(e.stackTrace)
+        }
 
         //region MotionEvents
         background.setOnTouchListener { _, motionEvent ->
@@ -48,8 +60,8 @@ class MainActivity : AppCompatActivity() {
                         setPaint(this.background.Paints[this.background.Position - 1].color)
 
 
-                    this.background.StartX = motionEvent.x
-                    this.background.StartY = motionEvent.y
+                    this.background.StartX.add(motionEvent.x)
+                    this.background.StartY.add(motionEvent.y)
 
                     this.background.moveDown(motionEvent.x, motionEvent.y)
                 }
@@ -59,8 +71,8 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    this.background.EndX = motionEvent.x
-                    this.background.EndY = motionEvent.y
+                    this.background.EndX.add(motionEvent.x)
+                    this.background.EndY.add(motionEvent.y)
 
                     this.background.moveUp(motionEvent.x, motionEvent.y)
                 }
@@ -75,18 +87,19 @@ class MainActivity : AppCompatActivity() {
     fun drawWhite(v: View) {
         setPaint(Color.WHITE)
 
+        this.background.BackgroungColorToSave = Color.BLACK
         this.background.setBackgroundColor(Color.BLACK)
     }
 
     fun drawBlack(v: View) {
         setPaint(Color.BLACK)
 
+        this.background.BackgroungColorToSave = Color.WHITE
         this.background.setBackgroundColor(Color.WHITE)
     }
 
     fun drawBlue(v: View) {
         setPaint(Color.BLUE)
-        saveDrawing()
     }
 
     fun drawGreen(v: View) {
@@ -95,8 +108,26 @@ class MainActivity : AppCompatActivity() {
 
     fun drawRed(v: View) {
         setPaint(Color.RED)
-
     }
+
+    fun saveDrawing(v: View) {
+        text_drawingName.visibility = View.VISIBLE
+
+        try {
+            text_drawingName.requestFocus().apply {
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(text_drawingName, InputMethodManager.SHOW_IMPLICIT)
+            }
+        } catch (e: Exception) {
+            println(e.stackTrace)
+        }
+    }
+
+    fun clearScreen(v: View) {
+        val intent: Intent = Intent(this, this::class.java)
+        startActivity(intent)
+    }
+
     //endregion
 
     private fun setPaint(paintColor: Int) {
@@ -111,37 +142,36 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    private fun saveDrawingFile() {
+        if (!background.createFileToSaveDrawing(text_drawingName)) {
+            var ostream: FileOutputStream? = null
 
-        when (requestCode) {
-            47 -> {
-                if (grantResults.count() > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                )
-                    saveDrawing()
-                return
+            background.createDrawingToSave()
+
+            try {
+                background.fileToSave.createNewFile()
+                ostream = FileOutputStream(background.fileToSave)
+
+                background.bitmap?.compress(Bitmap.CompressFormat.PNG, 100, ostream)
+
+                ostream.flush()
+
+                Toast.makeText(this, "Drawing saved!", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                println(e.printStackTrace())
+            } finally {
+                ostream?.close()
+                text_drawingName.setText("")
             }
+        } else {
+            Toast.makeText(this, "File exists!", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun saveDrawing() {
-        background.createDrawingToSave()
+    private fun initializeDrawingView() {
+        background = Drawing(this)
+        mainLayout.addView(background)
 
-        try {
-            background.fileToSave.createNewFile()
-            background.ostream = FileOutputStream(background.fileToSave)
-
-            background.bitmap?.compress(Bitmap.CompressFormat.PNG, 100, background.ostream)
-
-            background.ostream.flush()
-
-            Toast.makeText(this, "Drawing saved!", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            println(e.printStackTrace())
-        } finally {
-            background.ostream.close()
-        }
+        setPaint(Color.BLACK) // Starting paint color
     }
 }

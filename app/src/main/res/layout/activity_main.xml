@@ -49,4 +49,30 @@
             app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="328dp"
     />
+    <EditText
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:ems="10"
+            android:id="@+id/text_drawingName" android:layout_marginStart="8dp"
+            app:layout_constraintStart_toStartOf="parent" android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent" android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent" android:hint="Drawing name"
+            android:visibility="invisible"/>
+    <Button
+            android:onClick="saveDrawing"
+            android:text="+"
+            android:layout_width="40dp"
+            android:layout_height="38dp"
+            android:id="@+id/btn_saveDrawing"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    <Button
+            android:onClick="clearScreen"
+            android:text="x"
+            android:layout_width="40dp"
+            android:layout_height="38dp"
+            android:id="@+id/btn_clearScreen" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 </android.support.constraint.ConstraintLayout>

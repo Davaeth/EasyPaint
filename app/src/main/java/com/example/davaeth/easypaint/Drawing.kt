@@ -1,26 +1,34 @@
 package com.example.davaeth.easypaint
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Path
+import android.graphics.*
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.os.Environment
-import android.support.annotation.RequiresApi
 import android.view.View
+import android.widget.EditText
+import android.widget.Toast
 import java.io.File
-import java.io.FileOutputStream
 
 class Drawing(context: Context) : View(context) {
-    private var startX: Float = 0f
-    private var startY: Float = 0f
-
-    private var endX: Float = 0f
-    private var endY: Float = 0f
-
     private var position: Int = -1
+
+    private var backgroundColorToSave: Int = Color.WHITE
+
+    var oldBitmap: Bitmap? = null
+
+    //region Particular drawing
+
+    // Fields that cover circle drawing.
+    private var startX: MutableList<Float> = mutableListOf<Float>()
+    private var startY: MutableList<Float> = mutableListOf<Float>()
+
+    private var endX: MutableList<Float> = mutableListOf<Float>()
+    private var endY: MutableList<Float> = mutableListOf<Float>()
+
+    // Fields that cover path drawing.
+    private var paints: MutableList<Paint> = mutableListOf<Paint>()
+    private val paths: MutableList<Path> = mutableListOf<Path>()
+    //endregion
 
     //region Fields that save drawing in a picture directory.
 
@@ -32,48 +40,46 @@ class Drawing(context: Context) : View(context) {
 
     // Fields that actually save the drawing.
     private var fileToSavePath: String =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath
     lateinit var fileToSave: File
-    lateinit var ostream: FileOutputStream
-
-    //endregion
-
-    //region Particular drawing
-    private var paints: MutableList<Paint> = mutableListOf<Paint>()
-    private val paths: MutableList<Path> = mutableListOf<Path>()
-//        private val pathPaint: MutableMap<Int, Int> = mutableMapOf<Int, Int>()
 
     //endregion
 
     //region Properties
-    var StartX: Float
+    var Position: Int
+        get() = this.position
+        set(value) {
+            this.position = value
+        }
+
+    var BackgroungColorToSave: Int
+        get() = this.backgroundColorToSave
+        set(value) {
+            this.backgroundColorToSave = value
+        }
+
+    var StartX: MutableList<Float>
         get() = this.startX
         set(value) {
             this.startX = value
         }
 
-    var StartY: Float
+    var StartY: MutableList<Float>
         get() = this.startY
         set(value) {
             this.startY = value
         }
 
-    var EndX: Float
+    var EndX: MutableList<Float>
         get() = this.endX
         set(value) {
             this.endX = value
         }
 
-    var EndY: Float
+    var EndY: MutableList<Float>
         get() = this.endY
         set(value) {
             this.endY = value
-        }
-
-    var Position: Int
-        get() = this.position
-        set(value) {
-            this.position = value
         }
 
     val Paths: MutableList<Path>
@@ -82,10 +88,6 @@ class Drawing(context: Context) : View(context) {
     val Paints: MutableList<Paint>
         get() = this.paints
     //endregion
-
-    override fun performClick(): Boolean {
-        return super.performClick()
-    }
 
     //region The "art" drawing methods
 
@@ -103,7 +105,6 @@ class Drawing(context: Context) : View(context) {
         this.Paths[position].quadTo(startX, startY, startX, startY)
     }
 
-
     /**
      * Method that sets the end position of drawing.
      */
@@ -111,20 +112,75 @@ class Drawing(context: Context) : View(context) {
         this.Paths[position].lineTo(x, y)
     }
 
-
     //endregion
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+    //region Save drawing methods
+    fun createFileToSaveDrawing(drawingNameText: EditText): Boolean {
+        return if (checkDrawingToSaveName(drawingNameText)) {
+            fileToSave = File("$fileToSavePath/Screenshots/${drawingNameText.text.trim()}.png")
 
-        println("POSITION :: $position")
-        println("PATH COUNT :: ${Paths.count()}")
-        println("PAINT COUNT :: ${Paths.count()} \n\n")
+            if (fileToSave.exists()) {
+                true
+            } else {
+                Toast.makeText(context, "Drawing saved!", Toast.LENGTH_SHORT).show()
+                false
+            }
+        } else {
+            Toast.makeText(context, "Name cannot be blank!", Toast.LENGTH_LONG).show()
+            false
+        }
+    }
+
+    fun createDrawingToSave() {
+        val window: Rect = Rect()
+        this.getWindowVisibleDisplayFrame(window)
+
+        bitmap = Bitmap.createBitmap(window.width(), window.height(), Bitmap.Config.ARGB_8888)
+        canvas = Canvas(bitmap!!)
+        canvas.drawColor(this.BackgroungColorToSave)
 
         try {
             // Creating particular path with it particular paint set.
             for (i in 0..this.Paths.count() step 1) {
                 canvas.drawPath(paths[i], paints[i])
+            }
+        } catch (e: IndexOutOfBoundsException) {
+            println("Error occurred: ${e.message}, because: ${e.cause}.")
+        }
+    }
+
+    private fun checkDrawingToSaveName(drawingNameText: EditText): Boolean {
+        if (backgroundColorToSave == Color.WHITE) {
+            drawingNameText.setTextColor(Color.BLACK)
+            drawingNameText.setHintTextColor(Color.BLACK)
+        } else {
+            drawingNameText.setTextColor(Color.WHITE)
+            drawingNameText.setHintTextColor(Color.WHITE)
+        }
+
+        return if (drawingNameText.text.isBlank()) {
+            false
+        } else {
+            drawingNameText.visibility = GONE
+            drawingNameText.clearFocus()
+
+            true
+        }
+    }
+    //endregion
+
+    override fun performClick(): Boolean {
+        return super.performClick()
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
+        try {
+            // Creating particular path with it particular paint set.
+            for (i in 0..this.Paths.count() step 1) {
+                canvas.drawPath(paths[i], paints[i])
+                canvas.drawCircle(startX[i], startY[i], 15f, paints[i])
+                canvas.drawCircle(endX[i], endY[i], 15f, paints[i])
             }
         } catch (e: IndexOutOfBoundsException) {
             println("Error occurred: ${e.message}, because: ${e.cause}.")
@@ -133,27 +189,4 @@ class Drawing(context: Context) : View(context) {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createDrawingToSave() {
-        fileToSave = File("$fileToSavePath/drawing${position+1}.png")
-
-        bitmap = Bitmap.createBitmap(10000, 10000, Bitmap.Config.ARGB_8888, true)
-        canvas = Canvas(bitmap!!)
-
-//            if (drawable != null)
-//                drawable?.draw(canvas)
-//
-//            draw(canvas)
-
-        try {
-            // Creating particular path with it particular paint set.
-            for (i in 0..this.Paths.count() step 1) {
-                canvas.drawPath(paths[i], paints[i])
-            }
-        } catch (e: IndexOutOfBoundsException) {
-            println("Error occurred: ${e.message}, because: ${e.cause}.")
-        } finally {
-//                canvas.drawBitmap(bitmap!!, \)
-        }
-    }
 }
