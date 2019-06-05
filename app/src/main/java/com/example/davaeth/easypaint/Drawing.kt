@@ -40,7 +40,7 @@ class Drawing(context: Context) : View(context) {
 
     // Fields that actually save the drawing.
     private var fileToSavePath: String =
-        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).absolutePath
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath
     lateinit var fileToSave: File
 
     //endregion
@@ -117,7 +117,7 @@ class Drawing(context: Context) : View(context) {
     //region Save drawing methods
     fun createFileToSaveDrawing(drawingNameText: EditText): Boolean {
         return if (checkDrawingToSaveName(drawingNameText)) {
-            fileToSave = File("$fileToSavePath/Screenshots/${drawingNameText.text.trim()}.png")
+            fileToSave = File("$fileToSavePath/${drawingNameText.text.trim()}.png")
 
             if (fileToSave.exists()) {
                 true

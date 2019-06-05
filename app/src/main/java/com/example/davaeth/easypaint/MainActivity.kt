@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.RequiresApi
@@ -155,23 +156,34 @@ class MainActivity : AppCompatActivity() {
                 background.bitmap?.compress(Bitmap.CompressFormat.PNG, 100, ostream)
 
                 ostream.flush()
+                ostream.fd.sync();
 
                 Toast.makeText(this, "Drawing saved!", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
                 println(e.printStackTrace())
             } finally {
                 ostream?.close()
-                text_drawingName.setText("")
-            }
-        } else {
-            Toast.makeText(this, "File exists!", Toast.LENGTH_LONG).show()
+
+//                MediaScannerConnection.scanFile(this, String[] {background.fileToSave.absolutePath}, null, null)
+                sendBroadcast(
+                    Intent(
+                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                        Uri.parse("file://${text_drawingName.text}")
+                    )
+                )
+
+            text_drawingName.setText("")
         }
+    } else
+    {
+        Toast.makeText(this, "File exists!", Toast.LENGTH_LONG).show()
     }
+}
 
-    private fun initializeDrawingView() {
-        background = Drawing(this)
-        mainLayout.addView(background)
+private fun initializeDrawingView() {
+    background = Drawing(this)
+    mainLayout.addView(background)
 
-        setPaint(Color.BLACK) // Starting paint color
-    }
+    setPaint(Color.BLACK) // Starting paint color
+}
 }
